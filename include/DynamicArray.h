@@ -24,7 +24,7 @@ private:
         nbegin = newBlock;
 
         nblock_end = newBlock+newN;
-        nend = newBlock+N;
+        nend = newBlock+std::min(N,newN);
 
         operator delete(memoryBlock);
         memoryBlock = newBlock;
@@ -75,5 +75,10 @@ public:
         if (end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
         new (static_cast<void*>(memoryBlock+size())) type(obj);
         end++;
+    }
+
+    void reserve(size_t N)
+    {
+        reallocateBlock(N);
     }
 };
