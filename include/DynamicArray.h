@@ -1,7 +1,5 @@
 /*
 Currently working on
-- expandBlock
-- push_back
 - 
 */
 
@@ -11,19 +9,20 @@ private:
     type *memoryBlock;
     type *begin, *end, *block_end;
 
-    void expandBlock()
+    void reallocateBlock(size_t newN)
     {
         size_t N = capacity();
-        size_t newN = (N==0? 1 : N<<1);
-        type *newBlock = static_cast<type*>(operator new (sizeof(type)*newN));
+        type *newBlock = static_cast<type*>(operator new (sizeof(type)*(newN+1)));
         type *nbegin, *nend, *nblock_end;
 
-        nbegin = newBlock;
         for (size_t i = 0; i < N; i++)
         {
-            new (static_cast<void*>(newBlock)) type(std::move(*(begin+i)));
+            if (i<newN)
+                new (static_cast<void*>(newBlock+i)) type(std::move(*(begin+i)));
             (begin+i)->~type();
         }
+        nbegin = newBlock;
+
         nblock_end = newBlock+newN;
         nend = newBlock+N;
 
@@ -43,13 +42,7 @@ public:
         operator delete(memoryBlock);
     }
 
-    DynamicArray()
-    {
-        memoryBlock = static_cast<type*>(operator new(sizeof(type)));
-        begin = end = block_end = memoryBlock;
-    }
-
-    DynamicArray(size_t N)
+    DynamicArray(size_t N = 0)
     {
         memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
@@ -60,15 +53,9 @@ public:
         end = block_end = memoryBlock+N;
     }
 
-    inline size_t size()
-    {
-        return end-begin;
-    }
+    inline size_t size() {return end-begin;}
 
-    inline size_t capacity()
-    {
-        return block_end-begin;
-    }
+    inline size_t capacity() {return block_end-begin;}
 
     type& operator[](size_t idx)
     {
@@ -76,11 +63,17 @@ public:
         return *(begin+idx);
     }
 
-    void push_back(const type &obj)
+    void push_back(type &&obj) /* Temporary value (rvalue) */
     {
-        // std::cout << "Attempted push_back " << obj << '\n';
-        if (end==block_end) expandBlock();
+        if (end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
+        new (static_cast<void*>(memoryBlock+size())) type(std::move(obj));
         end++;
-        new (static_cast<void*>(memoryBlock+size()-1)) type(std::move(obj));
+    }
+
+    void push_back(const type &obj) /* Named value (lvalue) */
+    {
+        if (end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
+        new (static_cast<void*>(memoryBlock+size())) type(obj);
+        end++;
     }
 };
