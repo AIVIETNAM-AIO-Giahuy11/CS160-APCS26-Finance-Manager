@@ -1,3 +1,1 @@
-cmake -B build
-cmake --build build
-./build/run
+cmake -B build && cmake --build build && ./build/run
