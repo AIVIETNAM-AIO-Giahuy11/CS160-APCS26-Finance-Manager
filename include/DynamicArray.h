@@ -100,6 +100,12 @@ public:
         return *(_end-1);
     }
 
+    type& front() const
+    {
+        if (empty()) throw std::out_of_range("Attempting front() on empty state");
+        return *_begin;
+    }
+
     type& operator[](size_t idx) const
     {
         if (idx<0 || idx>=size()) throw std::out_of_range("OOB: Index out of bound");
