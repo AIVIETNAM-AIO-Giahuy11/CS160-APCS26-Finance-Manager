@@ -88,6 +88,12 @@ public:
         _end = block_end = memoryBlock+N;
     }
 
+    DynamicArray& operator=(DynamicArray other) /* Copy and swap idiom */
+    {
+        std::swap(*this, other);
+        return *this;
+    }
+
     inline size_t size() const {return _end-_begin;}
     inline size_t capacity() const {return block_end-_begin;}
     inline type* begin() const {return _begin;}
