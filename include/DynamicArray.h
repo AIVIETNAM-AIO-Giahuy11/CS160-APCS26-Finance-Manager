@@ -1,6 +1,6 @@
 /*
-Currently working on
-- 
+Todo:
+- Add more constructors
 */
 
 template<typename type>
@@ -42,7 +42,7 @@ public:
         operator delete(memoryBlock);
     }
 
-    DynamicArray(size_t N = 0)
+    DynamicArray(size_t N = 0) /* N instance of default obj */
     {
         memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
@@ -53,25 +53,55 @@ public:
         _end = block_end = memoryBlock+N;
     }
 
-    inline size_t size() {return _end-_begin;}
-    inline size_t capacity() {return block_end-_begin;}
-    inline type* begin() {return _begin;}
-    inline type* end() {return _end;}
+    DynamicArray(size_t N, const type &obj) /* N instance of obj */
+    {
+        memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
+        for (size_t i = 0; i < N; i++)
+        {
+            new (static_cast<void*>(memoryBlock+i)) type(obj);
+        }
+        _begin = memoryBlock;
+        _end = block_end = memoryBlock+N;
+    }
 
-    type& operator[](size_t idx)
+    DynamicArray (const DynamicArray& obj) /* Copy constructor */
+    {
+        size_t N = obj.size();
+        memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
+        for (size_t i = 0; i < N; i++)
+        {
+            new(static_cast<void*>(memoryBlock+i)) type(obj[i]); 
+        }
+        _begin = memoryBlock;
+        _end = block_end = memoryBlock+N;
+    }
+
+    inline size_t size() const {return _end-_begin;}
+    inline size_t capacity() const {return block_end-_begin;}
+    inline type* begin() const {return _begin;}
+    inline type* end() const {return _end;}
+    inline bool empty() const {return _begin==_end;}
+    
+    type& back() const
+    {
+        if (empty()) throw std::out_of_range("Attempting back() on empty state");
+        return *(_end-1);
+    }
+
+    type& operator[](size_t idx) const
     {
         if (idx<0 || idx>=size()) throw std::out_of_range("OOB: Index out of bound");
         return *(_begin+idx);
     }
 
-    void push_back(type &&obj) /* Temporary value (rvalue) */
+    void push_back(type &&obj) /* Temporary (rvalue) */
     {
         if (_end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
         new (static_cast<void*>(memoryBlock+size())) type(std::move(obj));
         _end++;
     }
 
-    void push_back(const type &obj) /* Named value (lvalue) */
+    void push_back(const type &obj) /* Named (lvalue) */
     {
         if (_end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
         new (static_cast<void*>(memoryBlock+size())) type(obj);
@@ -80,7 +110,7 @@ public:
 
     void pop_back()
     {
-        if (_end==_begin) throw std::out_of_range("Attempting pop_back on empty state");
+        if (empty()) throw std::out_of_range("Attempting pop_back on empty state");
         _end--;
         _end->~type();
     }
