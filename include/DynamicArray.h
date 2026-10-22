@@ -2,7 +2,7 @@
 Todo:
 - Add more constructors
 */
-
+#pragma once
 template<typename type>
 class DynamicArray{
 private:
