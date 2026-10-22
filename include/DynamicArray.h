@@ -76,6 +76,18 @@ public:
         _end = block_end = memoryBlock+N;
     }
 
+    DynamicArray (std::initializer_list<type> objlist) /* Initializer list constructor */
+    {
+        size_t N = objlist.size();
+        memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
+        for (size_t i = 0; i < N; i++)
+        {
+            new (static_cast<void*>(memoryBlock+i)) type(std::move(objlist.begin()[i]));
+        }
+        _begin = memoryBlock;
+        _end = block_end = memoryBlock+N;
+    }
+
     inline size_t size() const {return _end-_begin;}
     inline size_t capacity() const {return block_end-_begin;}
     inline type* begin() const {return _begin;}
