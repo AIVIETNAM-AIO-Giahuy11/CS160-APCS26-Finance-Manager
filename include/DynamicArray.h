@@ -135,6 +135,12 @@ public:
 
     void push_back(const type &obj) /* Named (lvalue) */
     {
+        if ((&obj)>=_begin && (&obj)<_end && _end==block_end) /* Handling self insertion */
+        {
+            type temp_obj = obj;
+            push_back(temp_obj);
+            return;
+        }
         if (_end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
         new (static_cast<void*>(memoryBlock+size())) type(obj);
         _end++;
