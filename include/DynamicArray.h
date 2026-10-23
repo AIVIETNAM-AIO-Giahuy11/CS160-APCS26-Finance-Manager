@@ -88,9 +88,17 @@ public:
         _end = block_end = memoryBlock+N;
     }
 
-    DynamicArray& operator=(DynamicArray other) /* Copy and swap idiom */
+    friend void swap(DynamicArray &obj1, DynamicArray &obj2) noexcept /* Overload std::swap */
     {
-        std::swap(*this, other);
+        std::swap(obj1.memoryBlock, obj2.memoryBlock);
+        std::swap(obj1._begin, obj2._begin);
+        std::swap(obj1._end, obj2._end);
+        std::swap(obj1.block_end, obj2.block_end);
+    }
+
+    DynamicArray& operator=(DynamicArray other) /* Copy and swap */
+    {
+        swap(*this, other);
         return *this;
     }
 
@@ -140,5 +148,13 @@ public:
     }
 
     void reserve(size_t N) {reallocateBlock(N);}
+    
+    void clear()
+    {
+        size_t N = size();
+        for (size_t i = 0; i < N; i++)
+            (_begin+i)->~type();
+        _end = _begin;
+    }
 
 };
