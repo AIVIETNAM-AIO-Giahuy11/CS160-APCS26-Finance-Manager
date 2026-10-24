@@ -1,6 +1,6 @@
 /*
 Todo:
-- Add more constructors
+- Add self insert guard to constructor(N, obj)
 */
 #pragma once
 template<typename type>
@@ -53,7 +53,7 @@ public:
         _end = block_end = memoryBlock+N;
     }
 
-    DynamicArray(size_t N, const type &obj) /* N instance of obj */
+    DynamicArray(size_t N, const type obj) /* N instance of obj */
     {
         memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
@@ -135,12 +135,13 @@ public:
 
     void push_back(const type &obj) /* Named (lvalue) */
     {
-        }
-            return;
-            push_back(temp_obj);
-            type temp_obj = obj;
+        if ((&obj)>=_begin && (&obj)<_end && _end==block_end) /* Self insertion guard */
         {
-        if ((&obj)>=_begin && (&obj)<_end && _end==block_end) /* Handling self insertion */
+            type temp_obj = obj;
+            push_back(temp_obj);
+            return;
+        }
+
         if (_end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
         new (static_cast<void*>(memoryBlock+size())) type(obj);
         _end++;
@@ -154,6 +155,26 @@ public:
     }
 
     void reserve(size_t N) {reallocateBlock(N);}
+
+    void resize(size_t N, const type &obj)
+    {
+        if ((&obj)>=_begin && (&obj)<_end && capacity()<N) /* Self insertion guard */
+        {
+            type temp_obj = obj;
+            resize(N, temp_obj);
+            return;
+        }
+
+        while (size()>N) pop_back();
+        if (size()==N) return;
+        if (capacity()<N) reallocateBlock(N);
+
+        for (size_t i = size(); i < N; i++)
+        {
+            new (static_cast<void*>(memoryBlock+i)) type(obj);
+            _end++;
+        }
+    }
     
     void clear()
     {
