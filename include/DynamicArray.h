@@ -6,28 +6,25 @@ Todo:
 template<typename type>
 class DynamicArray{
 private:
-    type *memoryBlock;
     type *_begin, *_end, *block_end;
 
     void reallocateBlock(size_t newN)
     {
         size_t N = capacity();
-        type *newBlock = static_cast<type*>(operator new (sizeof(type)*(newN+1)));
-        type *nbegin, *nend, *nblock_end;
+        type *nbegin = static_cast<type*>(operator new (sizeof(type)*(newN+1)));
+        type *nend, *nblock_end;
 
         for (size_t i = 0; i < N; i++)
         {
             if (i<newN)
-                new (static_cast<void*>(newBlock+i)) type(std::move(*(_begin+i)));
+                new (static_cast<void*>(nbegin+i)) type(std::move(*(_begin+i)));
             (_begin+i)->~type();
         }
-        nbegin = newBlock;
 
-        nblock_end = newBlock+newN;
-        nend = newBlock+std::min(N,newN);
+        nblock_end = nbegin+newN;
+        nend = nbegin+std::min(N,newN);
 
-        operator delete(memoryBlock);
-        memoryBlock = newBlock;
+        operator delete(_begin);
         _begin = nbegin;
         _end = nend;
         block_end = nblock_end;
@@ -39,58 +36,53 @@ public:
         size_t N = size();
         for (size_t i = 0; i < N; i++)
             (_begin+i)->~type();
-        operator delete(memoryBlock);
+        operator delete(_begin);
     }
 
     DynamicArray(size_t N = 0) /* N instance of default obj */
     {
-        memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
+        _begin = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
         {
-            new (static_cast<void*>(memoryBlock+i)) type();
+            new (static_cast<void*>(_begin+i)) type();
         }
-        _begin = memoryBlock;
-        _end = block_end = memoryBlock+N;
+        _end = block_end = _begin+N;
     }
 
     DynamicArray(size_t N, const type obj) /* N instance of obj */
     {
-        memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
+        _begin = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
         {
-            new (static_cast<void*>(memoryBlock+i)) type(obj);
+            new (static_cast<void*>(_begin+i)) type(obj);
         }
-        _begin = memoryBlock;
-        _end = block_end = memoryBlock+N;
+        _end = block_end = _begin+N;
     }
 
     DynamicArray (const DynamicArray& obj) /* Copy constructor */
     {
         size_t N = obj.size();
-        memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
+        _begin = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
         {
-            new(static_cast<void*>(memoryBlock+i)) type(obj[i]); 
+            new(static_cast<void*>(_begin+i)) type(obj[i]); 
         }
-        _begin = memoryBlock;
-        _end = block_end = memoryBlock+N;
+        _end = block_end = _begin+N;
     }
 
     DynamicArray (std::initializer_list<type> objlist) /* Initializer list constructor */
     {
         size_t N = objlist.size();
-        memoryBlock = static_cast<type*>(operator new(sizeof(type)*(N+1)));
+        _begin = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
         {
-            new (static_cast<void*>(memoryBlock+i)) type(std::move(objlist.begin()[i]));
+            new (static_cast<void*>(_begin+i)) type(std::move(objlist.begin()[i]));
         }
-        _begin = memoryBlock;
-        _end = block_end = memoryBlock+N;
+        _end = block_end = _begin+N;
     }
 
     friend void swap(DynamicArray &obj1, DynamicArray &obj2) noexcept /* Overload std::swap */
     {
-        std::swap(obj1.memoryBlock, obj2.memoryBlock);
         std::swap(obj1._begin, obj2._begin);
         std::swap(obj1._end, obj2._end);
         std::swap(obj1.block_end, obj2.block_end);
@@ -129,7 +121,7 @@ public:
     void push_back(type &&obj) /* Temporary (rvalue) */
     {
         if (_end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
-        new (static_cast<void*>(memoryBlock+size())) type(std::move(obj));
+        new (static_cast<void*>(_begin+size())) type(std::move(obj));
         _end++;
     }
 
@@ -143,7 +135,7 @@ public:
         }
 
         if (_end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
-        new (static_cast<void*>(memoryBlock+size())) type(obj);
+        new (static_cast<void*>(_begin+size())) type(obj);
         _end++;
     }
 
@@ -171,7 +163,7 @@ public:
 
         for (size_t i = size(); i < N; i++)
         {
-            new (static_cast<void*>(memoryBlock+i)) type(obj);
+            new (static_cast<void*>(_begin+i)) type(obj);
             _end++;
         }
     }
