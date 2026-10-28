@@ -1,6 +1,29 @@
 /*
-Todo:
-
+# Supported functions:
+## constructors:
+    DynamicArray() : construct empty array
+    DynamicArray(N) : N instance of default value
+    DynamicArray(N, obj) : N copy of obj
+    DynamicArray(other) : copy from other
+    DynamicArray({list}) : construct from curly bracket list
+## accessing
+    operator[] : self-explanatory
+    front() : get first element
+    back() : get last element
+    begin() : get pointer to the first element
+    end() : get pointer to the right of last element
+    size() : array size
+    capacity() : allocated size
+    empty() : self-explanatory
+## modifying
+    clear() : self-explanatory
+    pop_back() : remove last element and shrink array
+    push_back(obj) : append obj to array. Cost 1 copy for lvalue, or 1 move for rvalue.
+    reserve(N) : modify allocated memory size, shrink array if necessary
+    resize(N, obj) : modify array size and construct with obj if needed, can shrink array
+    swap(arr1, arr2) : self-explanatory
+    operator=(other) : copy other to an empty array and swap with the current array (copy and swap)
+    erase(idx) : remove element given by index
 */
 #pragma once
 template<typename type>
@@ -150,7 +173,7 @@ public:
 
     void reserve(size_t N) {reallocate(N);}
 
-    void resize(size_t N, const type &obj)
+    void resize(size_t N, const type &obj = type())
     {
         if ((&obj)>=_begin && (&obj)<_end && capacity()<N) /* Self insertion guard */
         {
@@ -178,4 +201,14 @@ public:
         _end = _begin;
     }
 
+    void erase(size_t idx)
+    {
+        size_t N = size();
+        if (idx<0 || idx>=N) throw std::out_of_range("Erase OOB: Index out of bound");
+        for (size_t i = idx; i<N-1; i++)
+        {
+            std::swap(*(_begin+i), *(_begin+i+1));
+        }
+        pop_back();
+    }
 };
