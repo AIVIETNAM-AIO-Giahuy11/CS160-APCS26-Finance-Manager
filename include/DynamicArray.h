@@ -1,6 +1,6 @@
 /*
 Todo:
-- Add self insert guard to constructor(N, obj)
+
 */
 #pragma once
 template<typename type>
@@ -8,7 +8,7 @@ class DynamicArray{
 private:
     type *_begin, *_end, *block_end;
 
-    void reallocateBlock(size_t newN)
+    void reallocate(size_t newN)
     {
         size_t N = capacity();
         type *nbegin = static_cast<type*>(operator new (sizeof(type)*(newN+1)));
@@ -51,6 +51,8 @@ public:
 
     DynamicArray(size_t N, const type obj) /* N instance of obj */
     {
+        /* Note: self insertion is safe as you can't call a constructor on already constructed object 
+        by language rule */
         _begin = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
         {
@@ -120,7 +122,7 @@ public:
 
     void push_back(type &&obj) /* Temporary (rvalue) */
     {
-        if (_end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
+        if (_end==block_end) reallocate(std::max(1,(int)size()<<1));
         new (static_cast<void*>(_begin+size())) type(std::move(obj));
         _end++;
     }
@@ -134,7 +136,7 @@ public:
             return;
         }
 
-        if (_end==block_end) reallocateBlock(std::max(1,(int)size()<<1));
+        if (_end==block_end) reallocate(std::max(1,(int)size()<<1));
         new (static_cast<void*>(_begin+size())) type(obj);
         _end++;
     }
@@ -146,7 +148,7 @@ public:
         _end->~type();
     }
 
-    void reserve(size_t N) {reallocateBlock(N);}
+    void reserve(size_t N) {reallocate(N);}
 
     void resize(size_t N, const type &obj)
     {
@@ -159,7 +161,7 @@ public:
 
         while (size()>N) pop_back();
         if (size()==N) return;
-        if (capacity()<N) reallocateBlock(N);
+        if (capacity()<N) reallocate(N);
 
         for (size_t i = size(); i < N; i++)
         {
