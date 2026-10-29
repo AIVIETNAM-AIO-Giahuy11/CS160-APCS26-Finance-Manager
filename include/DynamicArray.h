@@ -24,6 +24,7 @@
     swap(arr1, arr2) : self-explanatory
     operator=(other) : copy other to an empty array and swap with the current array (copy and swap)
     erase(idx) : remove element given by index
+    insert(idx,obj) : insert obj to the left of the previous a[idx] (obj is the new arr[idx])
 */
 #pragma once
 template<typename type>
@@ -74,8 +75,7 @@ public:
 
     DynamicArray(size_t N, const type obj) /* N instance of obj */
     {
-        /* Note: self insertion is safe as you can't call a constructor on already constructed object 
-        by language rule */
+        /* Note: self insertion is safe as you can't call a constructor on already constructed object */
         _begin = static_cast<type*>(operator new(sizeof(type)*(N+1)));
         for (size_t i = 0; i < N; i++)
         {
@@ -145,6 +145,13 @@ public:
 
     void push_back(type &&obj) /* Temporary (rvalue) */
     {
+        if ((&obj)>=_begin && (&obj)<_end && _end==block_end) /* Self insertion guard */
+        {
+            type temp_obj = obj;
+            push_back(temp_obj);
+            return;
+        }
+
         if (_end==block_end) reallocate(std::max(1,(int)size()<<1));
         new (static_cast<void*>(_begin+size())) type(std::move(obj));
         _end++;
@@ -210,5 +217,13 @@ public:
             std::swap(*(_begin+i), *(_begin+i+1));
         }
         pop_back();
+    }
+
+    void insert(size_t idx, const type &obj)
+    {
+        if (idx<0 || idx>size()) throw std::out_of_range("Insert OOB: Index out of bound");
+        push_back(obj);
+        for (size_t i = size()-1; i>idx; i--)
+            std::swap(*(_begin+i), *(_begin+i-1));
     }
 };
