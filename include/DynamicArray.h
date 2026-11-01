@@ -152,7 +152,7 @@ public:
             return;
         }
 
-        if (_end==block_end) reallocate(std::max(1,(int)size()<<1));
+        if (_end==block_end) reallocate(std::max(1,size()<<1));
         new (static_cast<void*>(_begin+size())) type(std::move(obj));
         _end++;
     }
@@ -166,7 +166,7 @@ public:
             return;
         }
 
-        if (_end==block_end) reallocate(std::max(1,(int)size()<<1));
+        if (_end==block_end) reallocate(std::max(1,size()<<1));
         new (static_cast<void*>(_begin+size())) type(obj);
         _end++;
     }
@@ -191,7 +191,7 @@ public:
 
         while (size()>N) pop_back();
         if (size()==N) return;
-        if (capacity()<N) reallocate(N);
+        if (capacity()<N) reallocate(std::max(capacity()<<1, N)); // Exponential reallocation if possible
 
         for (size_t i = size(); i < N; i++)
         {
