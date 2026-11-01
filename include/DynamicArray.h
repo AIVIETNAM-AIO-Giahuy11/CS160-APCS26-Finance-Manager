@@ -34,7 +34,7 @@ private:
 
     void reallocate(size_t newN)
     {
-        size_t N = capacity();
+        size_t N = size();
         type *nbegin = static_cast<type*>(operator new (sizeof(type)*(newN+1)));
         type *nend, *nblock_end;
 
