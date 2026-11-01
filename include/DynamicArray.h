@@ -73,7 +73,7 @@ public:
         _end = block_end = _begin+N;
     }
 
-    DynamicArray(size_t N, const type obj) /* N instance of obj */
+    DynamicArray(size_t N, const type &obj) /* N instance of obj */
     {
         /* Note: self insertion is safe as you can't call a constructor on already constructed object */
         _begin = static_cast<type*>(operator new(sizeof(type)*(N+1)));
