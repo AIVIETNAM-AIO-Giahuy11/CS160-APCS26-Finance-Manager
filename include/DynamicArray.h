@@ -139,7 +139,7 @@ public:
 
     type& operator[](size_t idx) const
     {
-        if (idx<0 || idx>=size()) throw std::out_of_range("OOB: Index out of bound");
+        if (idx>=size()) throw std::out_of_range("OOB: Index out of bound");
         return *(_begin+idx);
     }
 
@@ -211,7 +211,7 @@ public:
     void erase(size_t idx)
     {
         size_t N = size();
-        if (idx<0 || idx>=N) throw std::out_of_range("Erase OOB: Index out of bound");
+        if (idx>=N) throw std::out_of_range("Erase OOB: Index out of bound");
         for (size_t i = idx; i<N-1; i++)
         {
             std::swap(*(_begin+i), *(_begin+i+1));
@@ -221,7 +221,7 @@ public:
 
     void insert(size_t idx, const type &obj)
     {
-        if (idx<0 || idx>size()) throw std::out_of_range("Insert OOB: Index out of bound");
+        if (idx>size()) throw std::out_of_range("Insert OOB: Index out of bound");
         push_back(obj);
         for (size_t i = size()-1; i>idx; i--)
             std::swap(*(_begin+i), *(_begin+i-1));
