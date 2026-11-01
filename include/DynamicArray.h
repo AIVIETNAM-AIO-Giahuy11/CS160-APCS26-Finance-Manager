@@ -125,19 +125,19 @@ public:
     inline type* end() const {return _end;}
     inline bool empty() const {return _begin==_end;}
     
-    type& back() const
+    type& back()
     {
         if (empty()) throw std::out_of_range("Attempting back() on empty state");
         return *(_end-1);
     }
 
-    type& front() const
+    type& front()
     {
         if (empty()) throw std::out_of_range("Attempting front() on empty state");
         return *_begin;
     }
 
-    type& operator[](size_t idx) const
+    type& operator[](size_t idx)
     {
         if (idx>=size()) throw std::out_of_range("OOB: Index out of bound");
         return *(_begin+idx);
